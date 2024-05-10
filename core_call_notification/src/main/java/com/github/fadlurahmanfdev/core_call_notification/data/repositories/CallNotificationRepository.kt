@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.annotation.DrawableRes
 
@@ -37,9 +38,19 @@ interface CallNotificationRepository {
         context: Context,
         id: Int,
         @DrawableRes smallIcon: Int,
+        callerName: String,
+        callerImage: Bitmap?,
         answerIntent: PendingIntent,
         declinedIntent: PendingIntent,
+    ): Notification
+
+    fun getBasicOngoingCallNotification(
+        context: Context,
+        id: Int,
+        @DrawableRes smallIcon: Int,
         callerName: String,
+        callerImage: Bitmap?,
+        hangUpIntent: PendingIntent,
     ): Notification
 
     fun cancelIncomingCallNotification(context: Context, id: Int)

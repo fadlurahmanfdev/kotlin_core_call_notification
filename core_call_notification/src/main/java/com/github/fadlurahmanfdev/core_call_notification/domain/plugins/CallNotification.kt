@@ -35,15 +35,36 @@ class CallNotification {
             return ContextCompat.startForegroundService(context, intent)
         }
 
+        fun <T : CallNotificationPlayer> showOngoingCallNotification(
+            context: Context,
+            callNotificationId: Int,
+            callerName: String,
+            callerNetworkImage: String?,
+            clazz: Class<T>
+        ) {
+            val intent = Intent(context, clazz)
+            intent.apply {
+                action = CallNotificationPlayer.SHOW_ONGOING_CALL_NOTIFICATION
+                putExtra(CallNotificationPlayer.PARAM_CALL_NOTIFICATION_ID, callNotificationId)
+                putExtra(CallNotificationPlayer.PARAM_CALLER_NAME, callerName)
+                putExtra(CallNotificationPlayer.PARAM_CALLER_NETWORK_IMAGE, callerNetworkImage)
+            }
+            return ContextCompat.startForegroundService(context, intent)
+        }
+
         fun <T : CallNotificationReceiver> getAnswerCallPendingIntent(
             context: Context,
             callNotificationId: Int,
+            callerName: String,
+            callerNetworkImage: String?,
             clazz: Class<T>
         ): PendingIntent {
             val intent = Intent(context, clazz)
             intent.apply {
                 action = CallNotificationReceiver.ANSWER_CALL_NOTIFICATION
                 putExtra(CallNotificationReceiver.PARAM_CALL_NOTIFICATION_ID, callNotificationId)
+                putExtra(CallNotificationPlayer.PARAM_CALLER_NAME, callerName)
+                putExtra(CallNotificationPlayer.PARAM_CALLER_NETWORK_IMAGE, callerNetworkImage)
             }
             return PendingIntent.getBroadcast(context, 0, intent, getFlagPendingIntent())
         }
@@ -61,17 +82,47 @@ class CallNotification {
             return PendingIntent.getBroadcast(context, 0, intent, getFlagPendingIntent())
         }
 
-        fun <T : CallNotificationPlayer> acceptIncomingCall(
+        fun <T : CallNotificationReceiver> sendHangUpOngoingCallBroadcast(
             context: Context,
             callNotificationId: Int,
             clazz: Class<T>
         ) {
             val intent = Intent(context, clazz)
             intent.apply {
-                action = CallNotificationPlayer.ANSWER_CALL_NOTIFICATION
+                action = CallNotificationReceiver.HANG_UP_CALL_NOTIFICATION
                 putExtra(CallNotificationReceiver.PARAM_CALL_NOTIFICATION_ID, callNotificationId)
             }
-            context.stopService(intent)
+            context.sendBroadcast(intent)
+        }
+
+        fun <T : CallNotificationReceiver> getHangUpOngoingCallPendingIntent(
+            context: Context,
+            callNotificationId: Int,
+            clazz: Class<T>
+        ): PendingIntent {
+            val intent = Intent(context, clazz)
+            intent.apply {
+                action = CallNotificationReceiver.HANG_UP_CALL_NOTIFICATION
+                putExtra(CallNotificationReceiver.PARAM_CALL_NOTIFICATION_ID, callNotificationId)
+            }
+            return PendingIntent.getBroadcast(context, 0, intent, getFlagPendingIntent())
+        }
+
+        fun <T : CallNotificationPlayer> acceptIncomingCall(
+            context: Context,
+            callNotificationId: Int,
+            callerName: String,
+            callerImage: String?,
+            clazz: Class<T>,
+        ) {
+            val intent = Intent(context, clazz)
+            intent.apply {
+                action = CallNotificationPlayer.ANSWER_CALL_NOTIFICATION
+                putExtra(CallNotificationReceiver.PARAM_CALL_NOTIFICATION_ID, callNotificationId)
+                putExtra(CallNotificationPlayer.PARAM_CALLER_NAME, callerName)
+                putExtra(CallNotificationPlayer.PARAM_CALLER_NETWORK_IMAGE, callerImage)
+            }
+            ContextCompat.startForegroundService(context, intent)
         }
 
         fun <T : CallNotificationPlayer> declineIncomingCall(
@@ -82,6 +133,22 @@ class CallNotification {
             val intent = Intent(context, clazz)
             intent.apply {
                 action = CallNotificationPlayer.DECLINE_CALL_NOTIFICATION
+                putExtra(
+                    CallNotificationPlayer.PARAM_CALL_NOTIFICATION_ID,
+                    callNotificationId
+                )
+            }
+            context.stopService(intent)
+        }
+
+        fun <T : CallNotificationPlayer> hangUpIncomingCall(
+            context: Context,
+            callNotificationId: Int,
+            clazz: Class<T>
+        ) {
+            val intent = Intent(context, clazz)
+            intent.apply {
+                action = CallNotificationPlayer.HANG_UP_CALL_NOTIFICATION
                 putExtra(
                     CallNotificationPlayer.PARAM_CALL_NOTIFICATION_ID,
                     callNotificationId

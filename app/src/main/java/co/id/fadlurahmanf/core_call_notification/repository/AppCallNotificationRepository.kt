@@ -16,4 +16,12 @@ interface AppCallNotificationRepository {
         declinedIntent: PendingIntent,
         onGetNotification: (Notification) -> Unit
     )
+    fun getBasicOngoingCallNotification(
+        context: Context,
+        id: Int,
+        callerName: String,
+        callerImage: String?,
+        hangUpIntent: PendingIntent,
+        onGetNotification: (Notification) -> Unit
+    )
 }

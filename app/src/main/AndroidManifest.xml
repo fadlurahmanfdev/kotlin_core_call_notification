@@ -11,7 +11,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="Example Core Call Notification"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CoreCallNotification"
@@ -38,6 +38,7 @@
             <intent-filter>
                 <action android:name="co.id.fadlurahmanfdev.ANSWER_CALL_NOTIFICATION" />
                 <action android:name="co.id.fadlurahmanfdev.DECLINE_CALL_NOTIFICATION" />
+                <action android:name="co.id.fadlurahmanfdev.HANG_UP_CALL_NOTIFICATION" />
             </intent-filter>
         </receiver>
 
@@ -48,6 +49,7 @@
                 <action android:name="co.id.fadlurahmanfdev.SHOW_INCOMING_CALL_NOTIFICATION" />
                 <action android:name="co.id.fadlurahmanfdev.ANSWER_CALL_NOTIFICATION" />
                 <action android:name="co.id.fadlurahmanfdev.DECLINE_CALL_NOTIFICATION" />
+                <action android:name="co.id.fadlurahmanfdev.HANG_UP_CALL_NOTIFICATION" />
             </intent-filter>
         </service>
     </application>

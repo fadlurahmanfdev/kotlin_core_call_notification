@@ -29,10 +29,14 @@ abstract class CallNotificationPlayer : Service() {
     companion object {
         const val SHOW_INCOMING_CALL_NOTIFICATION =
             "co.id.fadlurahmanfdev.SHOW_INCOMING_CALL_NOTIFICATION"
+        const val SHOW_ONGOING_CALL_NOTIFICATION =
+            "co.id.fadlurahmanfdev.SHOW_ONGOING_CALL_NOTIFICATION"
         const val ANSWER_CALL_NOTIFICATION =
             "co.id.fadlurahmanfdev.ANSWER_CALL_NOTIFICATION"
         const val DECLINE_CALL_NOTIFICATION =
             "co.id.fadlurahmanfdev.DECLINE_CALL_NOTIFICATION"
+        const val HANG_UP_CALL_NOTIFICATION =
+            "co.id.fadlurahmanfdev.HANG_UP_CALL_NOTIFICATION"
 
         const val PARAM_CALL_NOTIFICATION_ID =
             "PARAM_CALL_NOTIFICATION_ID"
@@ -78,12 +82,41 @@ abstract class CallNotificationPlayer : Service() {
                 }
             }
 
+            SHOW_ONGOING_CALL_NOTIFICATION -> {
+                val callNotificationId = intent.getIntExtra(PARAM_CALL_NOTIFICATION_ID, -1)
+                val callerName = intent.getStringExtra(PARAM_CALLER_NAME)
+                val callerImage = intent.getStringExtra(PARAM_CALLER_NETWORK_IMAGE)
+                if (callNotificationId != -1) {
+                    onStartForegroundOngoingCallNotification(
+                        applicationContext,
+                        callNotificationId = callNotificationId,
+                        callerName = callerName ?: "-",
+                        callerImage = callerImage
+                    )
+                    onIncomingNotificationPlayerPlaying()
+                }
+            }
+
             ANSWER_CALL_NOTIFICATION -> {
-                onAnswerCallNotification()
+                val callNotificationId = intent.getIntExtra(PARAM_CALL_NOTIFICATION_ID, -1)
+                val callerName = intent.getStringExtra(PARAM_CALLER_NAME)
+                val callerImage = intent.getStringExtra(PARAM_CALLER_NETWORK_IMAGE)
+                if (callNotificationId != -1) {
+                    onStartForegroundAnswerCallNotification(
+                        applicationContext,
+                        callNotificationId = callNotificationId,
+                        callerName = callerName ?: "-",
+                        callerImage = callerImage
+                    )
+                }
             }
 
             DECLINE_CALL_NOTIFICATION -> {
                 onDeclineCallNotification()
+            }
+
+            HANG_UP_CALL_NOTIFICATION -> {
+                onHangUpCallNotification()
             }
         }
         return START_STICKY
@@ -99,6 +132,15 @@ abstract class CallNotificationPlayer : Service() {
         onGetNotification: (Notification) -> Unit
     )
 
+    abstract fun onGetOngoingCallNotification(
+        context: Context,
+        callNotificationId: Int,
+        callerName: String,
+        callerImage: String?,
+        hangUpIntent: PendingIntent,
+        onGetNotification: (Notification) -> Unit
+    )
+
     open fun onStartForegroundIncomingCallNotification(
         context: Context,
         callNotificationId: Int,
@@ -110,16 +152,52 @@ abstract class CallNotificationPlayer : Service() {
             callNotificationId = callNotificationId,
             callerName = callerName,
             callerImage = callerImage,
-            answerIntent = onAnswerIntent(context, callNotificationId = callNotificationId),
-            declinedIntent = onDeclinedIntent(context, callNotificationId = callNotificationId),
+            answerIntent = onAnswerPendingIntent(
+                context,
+                callNotificationId = callNotificationId,
+                callerName = callerName,
+                callerImage = callerImage
+            ),
+            declinedIntent = onDeclinedPendingIntent(context, callNotificationId = callNotificationId),
             onGetNotification = { notification ->
                 startForeground(callNotificationId, notification)
             },
         )
     }
 
-    abstract fun onAnswerIntent(context: Context, callNotificationId: Int): PendingIntent
-    abstract fun onDeclinedIntent(context: Context, callNotificationId: Int): PendingIntent
+    open fun onStartForegroundOngoingCallNotification(
+        context: Context,
+        callNotificationId: Int,
+        callerName: String,
+        callerImage: String?
+    ) {
+        onGetIncomingCallNotification(
+            applicationContext,
+            callNotificationId = callNotificationId,
+            callerName = callerName,
+            callerImage = callerImage,
+            answerIntent = onAnswerPendingIntent(
+                context,
+                callNotificationId = callNotificationId,
+                callerName = callerName,
+                callerImage = callerImage
+            ),
+            declinedIntent = onDeclinedPendingIntent(context, callNotificationId = callNotificationId),
+            onGetNotification = { notification ->
+                startForeground(callNotificationId, notification)
+            },
+        )
+    }
+
+    abstract fun onAnswerPendingIntent(
+        context: Context,
+        callNotificationId: Int,
+        callerName: String,
+        callerImage: String?
+    ): PendingIntent
+
+    abstract fun onDeclinedPendingIntent(context: Context, callNotificationId: Int): PendingIntent
+    abstract fun onHangUpPendingIntent(context: Context, callNotificationId: Int): PendingIntent
 
     open fun onIncomingNotificationPlayerPlaying() {
         stopRinging()
@@ -127,11 +205,30 @@ abstract class CallNotificationPlayer : Service() {
         listenRingerMode()
     }
 
-    private fun onAnswerCallNotification() {
-        stopForegroundService()
+    private fun onStartForegroundAnswerCallNotification(
+        context: Context,
+        callNotificationId: Int,
+        callerName: String,
+        callerImage: String?,
+    ) {
+        stopRinging()
+        onGetOngoingCallNotification(
+            applicationContext,
+            callNotificationId = callNotificationId,
+            callerName = callerName,
+            callerImage = callerImage,
+            hangUpIntent = onHangUpPendingIntent(context, callNotificationId = callNotificationId),
+            onGetNotification = { notification ->
+                startForeground(callNotificationId, notification)
+            },
+        )
     }
 
     open fun onDeclineCallNotification() {
+        stopForegroundService()
+    }
+
+    open fun onHangUpCallNotification() {
         stopForegroundService()
     }
 

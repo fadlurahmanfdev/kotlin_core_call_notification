@@ -47,16 +47,49 @@ class AppCallNotificationPlayer : CallNotificationPlayer() {
         )
     }
 
-    override fun onAnswerIntent(context: Context, callNotificationId: Int): PendingIntent {
+    override fun onGetOngoingCallNotification(
+        context: Context,
+        callNotificationId: Int,
+        callerName: String,
+        callerImage: String?,
+        hangUpIntent: PendingIntent,
+        onGetNotification: (Notification) -> Unit
+    ) {
+        return appCallNotificationRepository.getBasicOngoingCallNotification(
+            context,
+            id = callNotificationId,
+            callerName = callerName,
+            callerImage = callerImage,
+            hangUpIntent = hangUpIntent,
+            onGetNotification = onGetNotification
+        )
+    }
+
+    override fun onAnswerPendingIntent(
+        context: Context,
+        callNotificationId: Int,
+        callerName: String,
+        callerImage: String?
+    ): PendingIntent {
         return CallNotification.getAnswerCallPendingIntent(
+            context,
+            callNotificationId = callNotificationId,
+            callerName = callerName,
+            callerNetworkImage = callerImage,
+            clazz = AppCallNotificationReceiver::class.java
+        )
+    }
+
+    override fun onDeclinedPendingIntent(context: Context, callNotificationId: Int): PendingIntent {
+        return CallNotification.getDeclineIncomingCallPendingIntent(
             context,
             callNotificationId = callNotificationId,
             clazz = AppCallNotificationReceiver::class.java
         )
     }
 
-    override fun onDeclinedIntent(context: Context, callNotificationId: Int): PendingIntent {
-        return CallNotification.getDeclineIncomingCallPendingIntent(
+    override fun onHangUpPendingIntent(context: Context, callNotificationId: Int): PendingIntent {
+        return CallNotification.getHangUpOngoingCallPendingIntent(
             context,
             callNotificationId = callNotificationId,
             clazz = AppCallNotificationReceiver::class.java

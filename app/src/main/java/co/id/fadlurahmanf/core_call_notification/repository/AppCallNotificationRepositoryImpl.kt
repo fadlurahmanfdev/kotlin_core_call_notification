@@ -98,6 +98,7 @@ class AppCallNotificationRepositoryImpl(
                         id = id,
                         smallIcon = BANK_MAS_LOGO_ICON,
                         callerName = callerName,
+                        callerImage = bitmap,
                         answerIntent = answerIntent,
                         declinedIntent = declinedIntent
                     )
@@ -110,8 +111,44 @@ class AppCallNotificationRepositoryImpl(
                     id = id,
                     smallIcon = BANK_MAS_LOGO_ICON,
                     callerName = callerName,
+                    callerImage = null,
                     answerIntent = answerIntent,
                     declinedIntent = declinedIntent
+                )
+            )
+        }
+    }
+
+    override fun getBasicOngoingCallNotification(
+        context: Context,
+        id: Int,
+        callerName: String,
+        callerImage: String?,
+        hangUpIntent: PendingIntent,
+        onGetNotification: (Notification) -> Unit
+    ) {
+        if (callerImage != null) {
+            getImageBitmap(context, imageUrl = callerImage, onGetImageBitmap = { bitmap ->
+                onGetNotification(
+                    callNotificationRepository.getBasicOngoingCallNotification(
+                        context,
+                        id = id,
+                        smallIcon = BANK_MAS_LOGO_ICON,
+                        callerName = callerName,
+                        callerImage = bitmap,
+                        hangUpIntent = hangUpIntent
+                    )
+                )
+            })
+        } else {
+            onGetNotification(
+                callNotificationRepository.getBasicOngoingCallNotification(
+                    context,
+                    id = id,
+                    smallIcon = BANK_MAS_LOGO_ICON,
+                    callerName = callerName,
+                    callerImage = null,
+                    hangUpIntent = hangUpIntent
                 )
             )
         }

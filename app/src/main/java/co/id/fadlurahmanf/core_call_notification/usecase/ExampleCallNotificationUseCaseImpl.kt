@@ -28,5 +28,4 @@ class ExampleCallNotificationUseCaseImpl(
             clazz = AppCallNotificationPlayer::class.java
         )
     }
-
 }

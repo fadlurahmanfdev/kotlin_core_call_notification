@@ -22,6 +22,6 @@ class ExampleNotificationViewModel(
     }
 
     fun showBasicIncomingCallNotification(context: Context){
-        exampleCallNotificationUseCase.showBasicIncomingCallNotification(context)
+            exampleCallNotificationUseCase.showBasicIncomingCallNotification(context)
     }
 }

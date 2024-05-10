@@ -3,11 +3,12 @@ package com.github.fadlurahmanfdev.core_call_notification.data.repositories
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
-import android.media.RingtoneManager
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
+import androidx.core.graphics.drawable.IconCompat
 import com.github.fadlurahmanfdev.kotlin_core_notification.others.BaseNotificationService
 
 class CallNotificationRepositoryImpl : BaseNotificationService(),
@@ -53,9 +54,10 @@ class CallNotificationRepositoryImpl : BaseNotificationService(),
         context: Context,
         id: Int,
         @DrawableRes smallIcon: Int,
+        callerName: String,
+        callerImage: Bitmap?,
         answerIntent: PendingIntent,
         declinedIntent: PendingIntent,
-        callerName: String,
     ): Notification {
         createNotificationChannel(
             context,
@@ -65,8 +67,14 @@ class CallNotificationRepositoryImpl : BaseNotificationService(),
             sound = null
         )
 
+        val personBuilder = Person.Builder().apply {
+            if (callerImage != null) {
+                setIcon(IconCompat.createWithBitmap(callerImage))
+            }
+            setName(callerName)
+        }
         val style = NotificationCompat.CallStyle.forIncomingCall(
-            Person.Builder().setName(callerName).build(),
+            personBuilder.build(),
             declinedIntent,
             answerIntent
         )
@@ -80,26 +88,43 @@ class CallNotificationRepositoryImpl : BaseNotificationService(),
         return notificationBuilder.build()
     }
 
-//    fun <T : CallNotificationPlayer> showIncomingCallNotification(
-//        context: Context,
-//        clazz: Class<CallNotificationPlayer>,
-//        id: Int
-//    ) {
-//        val intent = Intent(context, clazz)
-//        intent.apply {
-//            action = CallNotificationPlayer.SHOW_INCOMING_CALL_NOTIFICATION
-//            putExtra(CallNotificationPlayer.PARAM_CALL_NOTIFICATION_ID, id)
-//            putExtra(CallNotificationPlayer.PARAM_CALLER_NAME, "callerName")
-//            putExtra(CallNotificationPlayer.PARAM_CALLER_NETWORK_IMAGE, "callerNetworkImage")
-//        }
-//        return ContextCompat.startForegroundService(
-//            context,
-//            intent
-//        )
-//    }
+    override fun getBasicOngoingCallNotification(
+        context: Context,
+        id: Int,
+        smallIcon: Int,
+        callerName: String,
+        callerImage: Bitmap?,
+        hangUpIntent: PendingIntent
+    ): Notification {
+        createNotificationChannel(
+            context,
+            channelId = VOIP_CHANNEL_ID,
+            channelName = VOIP_CHANNEL_NAME,
+            channelDescription = VOIP_CHANNEL_DESCRIPTION,
+            sound = null
+        )
+
+        val personBuilder = Person.Builder().apply {
+            if (callerImage != null) {
+                setIcon(IconCompat.createWithBitmap(callerImage))
+            }
+            setName(callerName)
+        }
+        val style = NotificationCompat.CallStyle.forOngoingCall(
+            personBuilder.build(),
+            hangUpIntent,
+        )
+        val notificationBuilder = notificationBuilder(
+            context,
+            channelId = VOIP_CHANNEL_ID,
+            smallIcon = smallIcon,
+        ).apply {
+            setStyle(style)
+        }
+        return notificationBuilder.build()
+    }
 
     override fun cancelIncomingCallNotification(context: Context, id: Int) {
         getNotificationManager(context).cancel(id)
-//        CallNotificationPlayerService.stopIncomingCallNotificationPlayer(context)
     }
 }

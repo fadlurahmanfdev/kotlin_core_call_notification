@@ -8,7 +8,12 @@ import com.github.fadlurahmanfdev.core_call_notification.domain.plugins.CallNoti
 import com.github.fadlurahmanfdev.core_call_notification.domain.receiver.CallNotificationReceiver
 
 class AppCallNotificationReceiver : CallNotificationReceiver() {
-    override fun onAcceptIncomingCall(context: Context, callNotificationId: Int) {
+    override fun onAcceptIncomingCall(
+        context: Context,
+        callNotificationId: Int,
+        callerName: String,
+        callerImage: String?
+    ) {
         val intent = Intent(context, OnGoingCallActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.startActivity(intent)
@@ -16,6 +21,8 @@ class AppCallNotificationReceiver : CallNotificationReceiver() {
         CallNotification.acceptIncomingCall(
             context,
             callNotificationId = callNotificationId,
+            callerName = callerName,
+            callerImage = callerImage,
             clazz = AppCallNotificationPlayer::class.java
         )
     }
@@ -25,6 +32,14 @@ class AppCallNotificationReceiver : CallNotificationReceiver() {
             context,
             callNotificationId = callNotificationId,
             clazz = AppCallNotificationPlayer::class.java
+        )
+    }
+
+    override fun onHangUpIncomingCall(context: Context, callNotificationId: Int) {
+        CallNotification.hangUpIncomingCall(
+            context,
+            callNotificationId = callNotificationId,
+            clazz = AppCallNotificationPlayer::class.java,
         )
     }
 }
